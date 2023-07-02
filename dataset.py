@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+from matplotlib import pyplot as plt
 from torch.utils.data import Dataset
 import torchaudio
 
@@ -21,6 +23,8 @@ class AN4Dataset(Dataset):
 
         self.zipped_paths = list(zip(sorted(self.wav_dir_path), sorted(self.text_dir_path)))
 
+        length = []
+
         for tup in self.zipped_paths:
             assert tup[0].stem == tup[1].stem
 
@@ -28,6 +32,7 @@ class AN4Dataset(Dataset):
             assert text_path.stem == wav_path.stem
 
             wav, sr = torchaudio.load(wav_path)
+            length.append(len(wav[0]) / sr)
             with open(text_path) as f:
                 text = f.readline()
 
@@ -36,6 +41,10 @@ class AN4Dataset(Dataset):
             )
 
         self.sr = sr
+
+        plt.hist(length, color='lightgreen', ec='black', bins=150)
+        plt.show()
+        print(length)
 
     def __len__(self):
         return len(self.data)

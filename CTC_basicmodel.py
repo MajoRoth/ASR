@@ -113,12 +113,59 @@ def encode(audio: torch.Tensor, text: str, show: bool = False):
     return spectrogram, label
 
 """
-    Train
+    Define The model
+"""
+class FullyConnected(torch.nn.Module):
+    """
+    Args:
+        n_feature: Number of input features
+        n_hidden: Internal hidden unit size.
+    """
+
+    def __init__(self, n_feature: int, n_hidden: int, dropout: float, relu_max_clip: int = 20) -> None:
+        super(FullyConnected, self).__init__()
+        self.fc = torch.nn.Linear(n_feature, n_hidden, bias=True)
+        self.relu_max_clip = relu_max_clip
+        self.dropout = dropout
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.fc(x)
+        x = torch.nn.functional.relu(x)
+        x = torch.nn.functional.hardtanh(x, 0, self.relu_max_clip)
+        if self.dropout:
+            x = torch.nn.functional.dropout(x, self.dropout, self.training)
+        return x
+
+
+class ASR(nn.Module):
+    def __init__(self, input_dim: int, output_dim: int, rnn_layers: int = 1, rnn_units: int = 128):
+        super().__init__()
+        n_hidden = 200
+        dropout = 0
+        self.fc1 = FullyConnected(input_dim, n_hidden, dropout)
+        self.bi_rnn = torch.nn.RNN(n_hidden, n_hidden, num_layers=rnn_layers, nonlinearity="relu", bidirectional=True)
+        self.fc2 = FullyConnected(n_hidden, n_hidden, dropout)
+        self.out = torch.nn.Linear(n_hidden, output_dim)
+
+    def forward(self, x):
+        x = self.fc1(x)        # N x C x T x F
+        x = x.squeeze(1)        # N x C x T x H
+        x = x.transpose(0, 1)        # N x T x H
+        x, _ = self.bi_rnn(x)        # T x N x H
+        x = x[:, :, : self.n_hidden] + x[:, :, self.n_hidden:]
+        x = self.fc2(x)        # T x N x H
+        x = self.out(x)        # T x N x H
+        x = x.permute(1, 0, 2)        # T x N x n_class
+        x = torch.nn.functional.log_softmax(x, dim=2)        # N x T x n_class
+        return x        # N x T x n_class
+
+
+
+"""
+    Training loop
 """
 
-
-encode(train_features, train_labels, True)
-
+#TODO @Alon can you implement?
 
 
 
