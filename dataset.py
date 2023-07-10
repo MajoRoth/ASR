@@ -56,59 +56,6 @@ class AN4Dataset(Dataset):
 
     def __repr__(self):
         return self.__str__()
-    
-
-class ProcessedDataset(AN4Dataset):
-    
-    def __init__(self, path):
-        super().__init__(path)
-
-        self.characters = [x for x in "abcdefghijklmnopqrstuvwxyz'?! "]
-        self.encoder = LabelEncoder(self.characters, reserved_labels=['unknown'], unknown_index=0)
-
-        self.processed_data = list()
-        for audio, text in self.data:
-            spectrogram, label = encode(audio, text, self.encoder)
-            self.processed_data.append((spectrogram, label))
-
-            # print(audio.shape)
-            # print(spectrogram.shape)
-            # print(audio.shape[1] / spectrogram.shape[1])
-            # print("\n")
-
-
-    def __getitem__(self, idx):
-        return self.processed_data[idx]
-
-
-
-def encode(audio: torch.Tensor, text: str, encoder):
-    N_FFT = 384
-    HOP_LENGTH = 160
-    WIN_LENGTH = 256
-
-    # calculate spec
-    spectrogram = torch.stft(audio.squeeze(0), n_fft=N_FFT, hop_length=HOP_LENGTH, win_length=WIN_LENGTH)
-    spectrogram = torch.sqrt((spectrogram ** 2).sum(-1))
-
-    # normalize
-    mean = torch.mean(spectrogram, 1, keepdim=True)
-    std = torch.std(spectrogram, 1, keepdim=True)
-    spectrogram = (spectrogram - mean) / (std + 1e-10)
-
-    label = [encoder.encode(c) for c in text.lower()]
-
-    return spectrogram, label
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -120,8 +67,6 @@ if __name__ == '__main__':
     train = AN4Dataset(path / Path("train"))
     test = AN4Dataset(path / Path("test"))
     val = AN4Dataset(path / Path("val"))
-
-    sss = ProcessedDataset(path / Path("train"))
 
     print(train[0])
 

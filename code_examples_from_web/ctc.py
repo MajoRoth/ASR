@@ -86,7 +86,7 @@ acoustic_model = bundle.get_model()
 #
 
 speech_file = download_asset("tutorial-assets/ctc-decoding/1688-142285-0007.wav")
-
+print(speech_file)
 IPython.display.Audio(speech_file)
 
 
