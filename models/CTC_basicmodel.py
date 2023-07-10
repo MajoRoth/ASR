@@ -1,7 +1,6 @@
 """
 
-    Ill implement simple ctc model here
-
+    not working, some experiment i made
 """
 from pathlib import Path
 
