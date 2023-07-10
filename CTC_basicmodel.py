@@ -13,13 +13,15 @@ from jiwer import wer
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torchaudio.models.decoder._ctc_decoder import ctc_decoder
 from torchnlp.encoders import LabelEncoder
 
 import librosa
 import matplotlib.pyplot as plt
 
 
-from dataset import AN4Dataset
+from dataset import AN4Dataset, ProcessedDataset
+
 """
     Constants
 """
@@ -44,6 +46,7 @@ val_dataloader = DataLoader(val, batch_size=BATCH_SIZE, shuffle=True)
 characters = [x for x in "abcdefghijklmnopqrstuvwxyz'?! "]
 encoder = LabelEncoder(characters, reserved_labels=['unknown'], unknown_index=0)
 print(f"Created Vocab: {encoder.vocab} (size: {len(encoder.vocab)}")
+
 
 """
     for debug
@@ -166,6 +169,16 @@ class ASR(nn.Module):
 """
 
 #TODO @Alon can you implement?
+
+
+if __name__ == '__main__':
+    print(train_dataloader)
+
+    sss = ProcessedDataset(path / Path("train"))
+
+    train_features, train_labels = next(iter(train_dataloader))
+    print(train_features)
+    print(train_labels)
 
 
 
