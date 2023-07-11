@@ -9,7 +9,7 @@ from jiwer import wer
 from tqdm import tqdm
 
 from dataset import AN4Dataset
-from ctc import GreedyCTCDecoder
+from ctc import GreedyCTC
 
 
 class AcousticGreedyCTC:
@@ -23,7 +23,7 @@ class AcousticGreedyCTC:
 
         self.acoustic_model = bundle.get_model()
         self.tokens = [label.lower() for label in bundle.get_labels()]
-        self.decoder = GreedyCTCDecoder(self.tokens)
+        self.decoder = GreedyCTC(self.tokens)
 
     def __call__(self, *args, **kwargs):
         if len(args) != 1:
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     model = AcousticGreedyCTC()
 
-    for i in range(1):
+    for i in range(10):
         wav, label = val[i]
         print(f"PREDICTED: {model(wav)}  ---  LABELED: {label}")
 
