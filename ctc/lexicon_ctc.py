@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from typing import List
 
@@ -6,7 +7,7 @@ import torch
 from abc import ABC, abstractmethod
 
 import torchaudio
-
+from torchaudio.models.decoder._ctc_decoder import ctc_decoder
 from dataset import AN4Dataset
 
 
@@ -46,10 +47,8 @@ class AN4Lexicon(Lexicon):
             with open(self.path, 'r') as lexicon:
                 self.words_set = {s.lower().strip() for s in lexicon.readlines()}
 
-
-    def create_lexicon(self, data_path: str = "./../an4/train/", output_path: str = "./../an4-vocab.txt"):
+    def create_lexicon(self, data_path: str = "/ctc/an4/train/", output_path: str = "/an4-vocab.txt"):
         text_paths = Path(data_path).rglob("*.txt")
-
         for text_path in text_paths:
             with open(str(text_path), 'r') as txt:
                 line = txt.readline().lower().strip()
@@ -60,50 +59,89 @@ class AN4Lexicon(Lexicon):
             for word in self.words_set:
                 lexicon.write(word + "\n")
 
-
-
-
     def is_word(self, word: str):
         return word in self.words_set
 
+# class Route:
+#
+#     def __init__(self, init_list=[], probability=0):
+#         self.route = init_list
+#         self.probability = probability
+#
+#     def __le__(self, other):
+#         if type(other) != type(self):
+#             raise Exception("Invalid type for compression")
+#         return self.probability <= other.probability
+#
+#     def get_next_route(self, index: int, probability: float):
+#         return Route(self.route + [index], self.probability + probability)
+
+
+
 
 class LexiconCTC(torch.nn.Module):
+
+    K = 100
 
     def __init__(self, labels, blank=0):
         super().__init__()
         self.labels = labels
         self.blank = blank
 
-        self.an4_lexicon = AN4Lexicon(data_path="./../an4-vocab.txt")
-        self.librispeech_lexicon = LibrispeechLexicon(data_path="./../librispeech-vocab.txt")
+        self.an4_lexicon = AN4Lexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/an4-vocab.txt")
+        self.librispeech_lexicon = LibrispeechLexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/librispeech-vocab.txt")
 
     def forward(self, emission: torch.Tensor) -> List[str]:
         """
             Calculating the best k options
             choosing the sentence with best score
+
+            VERY TIME CONSUMING, NEED TO CHECK DIFFERENT METHODS
         """
+        k_routes = [
+            [list(), 0.0]  # each route contains the letters he visited and the current score
+        ]
 
-        raise NotImplemented()
+        for letter in emission:
+            letter = (letter - torch.min(letter) + 0.001) / (torch.max(letter) - torch.min(letter))  # normalize
+            candidates = list()
 
-        print(emission)
-        indices = torch.argmax(emission, dim=-1)  # [num_seq,]
-        indices = torch.unique_consecutive(indices, dim=-1)
-        indices = [i for i in indices if i != self.blank]
+            for route, score in k_routes:
+                for j in range(len(letter)):
+                    new_score = score - torch.log(letter[j])
 
-        joined = "".join([self.labels[i] for i in indices])
-        return joined.replace("|", " ").strip().split()
+                    candidates.append(
+                        [route + [j], new_score]
+                    )
+            sorted_candidates = sorted(candidates, key=lambda x: x[1])
+            k_routes = sorted_candidates[:LexiconCTC.K]
+
+
+        output = set()
+        for route, score in k_routes:
+            indices = torch.unique_consecutive(torch.tensor(route), dim=-1)
+            indices = [i for i in indices if i != self.blank]
+            joined = "".join([self.labels[i] for i in indices])
+            result = joined.replace("|", " ").strip()
+            output.add(result)
+
+        max_score = -1
+        result = None
+        for res in output:
+            score = 0
+            for w in res.split():
+                if self.an4_lexicon.is_word(w):
+                    score += 1
+                if self.librispeech_lexicon.is_word(w):
+                    score += 0.1
+
+            if score > max_score:
+                max_score = score
+                result = res
+
+        return result.split()
 
 
 
-# if __name__ == '__main__':
-#     bundle = torchaudio.pipelines.WAV2VEC2_ASR_BASE_10M
-#     bundle.get_model()
-#     acoustic_model = bundle.get_model()
-#
-#     path = Path("/Users/amitroth/PycharmProjects/ASR/an4")
-#     val = AN4Dataset(path / Path("val"))
-#
-#     wav, label = val[0]
-#     emission, _ = acoustic_model(wav)
-#     print(emission)
-#     ctc = LexiconCTC(labels=[label.lower() for label in bundle.get_labels()])
+
+
