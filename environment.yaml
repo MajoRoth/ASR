@@ -1,0 +1,14 @@
+name: vocal2accomp
+
+channels:
+  - pytorch
+  - conda-forge
+
+dependencies:
+  - python>=3.9,<3.10
+  - pytorch
+  - torchaudio
+  - cudatoolkit
+  - librosa
+  - tqdm
+  - wandb
