@@ -1,4 +1,4 @@
-name: vocal2accomp
+name: asr
 
 channels:
   - pytorch
