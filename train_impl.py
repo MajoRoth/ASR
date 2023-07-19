@@ -19,7 +19,7 @@ def get_optimizer(model, cfg):
 def _train_impl(model, dataset, dataset_val, args, cfg):
     torch.backends.cudnn.benchmark = True
     opt = get_optimizer(model, cfg)
-    trainer_class = AcousticTrainer 
+    trainer_class = AcousticTrainer
     trainer = trainer_class(args, model, dataset, dataset_val, opt, cfg)
     trainer.is_master = True
     trainer.restore_from_checkpoint()
@@ -39,13 +39,13 @@ def init_logger_if_needed(args, cfg):
         wandb_run_id = get_wandb_id(wandb_id_file)
         if wandb_run_id is not None:
             wandb.init(project="ASR_Proj", name=cfg.run_name,
-                        dir=f"{args.model_dir}", resume="allow", id=wandb_run_id)
+                       dir=f"{args.model_dir}", resume="allow", id=wandb_run_id)
             assert wandb_run_id == wandb.run.id
             print(f"resuming run with wandb unique id: {wandb.run.id}")
 
         else:
             wandb.init(project="ASR_Proj", name=cfg.run_name,
-                        dir=f"{args.model_dir}", resume="allow")
+                       dir=f"{args.model_dir}", resume="allow")
             with open(f"{args.model_dir}/wandb_id.txt", 'w') as f:
                 f.write(f'{wandb.run.id}')
                 print(f"created new wandb unique id: {wandb.run.id}")
@@ -55,11 +55,10 @@ def train(args, cfg):
     init_logger_if_needed(args, cfg)
 
     dataset_train, dataset_val = build_datasets(args, cfg)
-    
-    
 
     model = get_model(args, cfg)
-    model = model.cuda()
+    if torch.cuda.is_available():
+        model = model.cuda()
 
     print_num_params(model, "model")
 
