@@ -18,7 +18,7 @@ class DS2LargeModel(nn.Module):
         )
 
         self.rnn_layers = nn.GRU(
-            input_size=32 * 32,  # calculated based on convolutions
+            input_size=32 * (self.cfg.n_mels // 4),  # calculated based on convolutions
             hidden_size=800,
             num_layers=5,
             batch_first=True,
@@ -76,7 +76,7 @@ class DS2SmallModel(nn.Module):
         )
 
         self.rnn_layers = nn.GRU(
-            input_size=32 * 32,  # calculated based on convolutions
+            input_size=32 * (self.cfg.n_mels // 4),  # calculated based on convolutions
             hidden_size=512,
             num_layers=2,
             batch_first=True,
@@ -137,7 +137,7 @@ class DS2ToyModel(nn.Module):
         )
 
         self.rnn_layers = nn.GRU(
-            input_size=96 * 16,  # calculated based on convolutions
+            input_size=96 * (self.cfg.n_mels // 8),  # calculated based on convolutions
             hidden_size=256,
             num_layers=1,
             batch_first=True,
