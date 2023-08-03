@@ -7,6 +7,34 @@ from torch.utils.data import Dataset
 import torchaudio
 #from torchnlp.encoders import LabelEncoder
 
+TEXT_MIN_ASCII_VAL = 32
+TEXT_MAX_ASCII_VAL = 90
+EPSILON = "ε"
+
+
+class CharDictionary():
+    def __init__(self, text_min_ascii, text_max_asii):
+        self.chr2label = {chr(ascii_val): (ascii_val - text_min_ascii + 1) for ascii_val in range(text_min_ascii, text_max_asii+1)}
+        self.label2chr = {v: k for k,v in self.chr2label.items()}
+        self.label2chr[0] = EPSILON
+    
+    def text2tokens(self, text):
+        return torch.tensor([self.chr2label[c] for c in text], dtype=int)
+
+    def tokens2text(self, labels):
+        return "".join([self.label2chr[int(l)] for l in labels])
+
+class Wav2MelSpec():
+    def __init__(self, cfg):
+        self.to_melspec = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels)
+    def __call__(self, wav):
+        melspec = self.to_melspec(wav)
+        if len(melspec.shape) == 2:
+            # [n_mels, seq_len]
+            return melspec.T
+        else:
+            # [batch, n_mels, seq_len]
+            return melspec.permute(0, 2, 1)
 
 class AN4DatasetPreprocessed(Dataset):
     """
@@ -18,6 +46,7 @@ class AN4DatasetPreprocessed(Dataset):
             raise Exception(f"Invalid Path {path}")
         
         self.cfg = cfg
+        self.wav2mel = Wav2MelSpec(cfg)
         self.est_norm_factors = est_norm_factors
 
         self.path = Path(path)
@@ -25,14 +54,16 @@ class AN4DatasetPreprocessed(Dataset):
 
         self.text_dir_path = self.path.rglob("*.txt")
         self.wav_dir_path = self.path.rglob("*.wav")
-        self.to_melspec = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels)
+        
         self.parse_files()
-
-
+        
+        self.token_dict = CharDictionary(TEXT_MIN_ASCII_VAL, TEXT_MAX_ASCII_VAL)        
+    
     def parse_files(self):
         self.zipped_paths = list(zip(sorted(self.wav_dir_path), sorted(self.text_dir_path)))
         self.max_seq_len = 0
         self.max_text_len = 0
+        self.max_wav_len = 0
         self.text_min_ascii = 100000
         self.text_max_ascii = -1    
 
@@ -47,7 +78,7 @@ class AN4DatasetPreprocessed(Dataset):
             wav, sr = torchaudio.load(wav_path)
             assert wav.shape[0] == 1 # assert mono
             wav = wav[0]
-            melspec = self.to_melspec(wav).T # time, n_mels
+            melspec = self.wav2mel(wav) # time, n_mels
             
             if self.est_norm_factors:
                 if melspecs_pool is None:
@@ -57,6 +88,8 @@ class AN4DatasetPreprocessed(Dataset):
 
 
             self.max_seq_len = max(self.max_seq_len, len(melspec))
+            self.max_wav_len = max(self.max_wav_len, len(wav))
+
 
             with open(text_path) as f:
                 text = f.readline()
@@ -71,6 +104,7 @@ class AN4DatasetPreprocessed(Dataset):
             )
         self.sr = sr
         
+        assert self.text_min_ascii >= TEXT_MIN_ASCII_VAL and self.text_max_ascii <= TEXT_MAX_ASCII_VAL
         if self.est_norm_factors:
             self.calc_normalization_factors(melspecs_pool)
         else:
@@ -86,7 +120,7 @@ class AN4DatasetPreprocessed(Dataset):
 
 
     def __getitem__(self, idx):
-        _, melspec, text = self.data[idx]
+        wav, melspec, text = self.data[idx]
 
         # per feature normalization 
         if self.cfg.normalize_features:
@@ -96,13 +130,15 @@ class AN4DatasetPreprocessed(Dataset):
         n = len(melspec)
         if n < self.max_seq_len:
             melspec = torch.concat((melspec, torch.zeros((self.max_seq_len - n, self.cfg.n_mels))))
-        text_ascii = torch.tensor([ord(c) for c in text], dtype=int)
-        label = text_ascii - self.text_min_ascii + 1 # adding 1 s.t. the 0 token would stand for the blank char
+        n_wav = len(wav)
+        if n_wav < self.max_wav_len:
+            wav = torch.concat((wav, torch.zeros(self.max_wav_len - n_wav)))
+        label = self.token_dict.text2tokens(text)
 
         text_len = len(label)
         if text_len < self.max_text_len:
             label = torch.concat((label, torch.zeros(self.max_text_len - text_len, dtype=int))) 
-        return {"x": melspec, "length": n, "label": label, "label_length": text_len}
+        return {"x": melspec, "length": n, "label": label, "label_length": text_len, "wav": wav}
 
 
     def __str__(self):
@@ -131,6 +167,7 @@ def build_datasets(args, cfg):
     val_ds = build_single_dataset(datasets_path / Path("val"), args, cfg, is_training=False)
     val_ds.dataset.feats_std = train_ds.dataset.feats_std
     val_ds.dataset.feats_mean = train_ds.dataset.feats_mean
+    val_ds.dataset.token_dict = train_ds.dataset.token_dict
 
     # n_tokens_train = train_ds.dataset.text_max_ascii - train_ds.dataset.text_min_ascii 
     # n_tokens_val = val_ds.dataset.text_max_ascii - val_ds.dataset.text_min_ascii 

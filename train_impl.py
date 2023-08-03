@@ -56,7 +56,7 @@ def train(args, cfg):
 
     dataset_train, dataset_val = build_datasets(args, cfg)
 
-    model = get_model(args, cfg)
+    model = get_model(args, cfg, dataset_train.dataset.token_dict)
     if torch.cuda.is_available():
         model = model.cuda()
 
