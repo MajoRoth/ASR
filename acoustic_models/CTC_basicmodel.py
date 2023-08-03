@@ -167,7 +167,6 @@ class ASR(nn.Module):
     Training loop
 """
 
-#TODO @Alon can you implement?
 
 
 if __name__ == '__main__':
