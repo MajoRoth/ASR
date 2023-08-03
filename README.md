@@ -18,6 +18,6 @@ Achieves WER of 0.78 on the val data.
 ### Train command example:
 `python train.py --conf confs/linear_acoustic.json --logger wandb`
 
-### Initial train results:
-https://api.wandb.ai/links/alonzi/jcm6u9c8
-
+## Evaluation
+### Eval command example:
+`python evaluate.py --conf confs/linear_acoustic.json`
