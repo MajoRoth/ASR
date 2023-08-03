@@ -20,6 +20,7 @@ class AcousticTrainer(GenericTrainer):
         self.lr = cfg.learning_rate
         self.summary_writer = None
         self.loss = nn.CTCLoss()
+        self.best_valid_loss = 1000000
 
     def forward_and_loss(self, features):
         logits = self.model(features['x']) # B, T, C
@@ -60,6 +61,12 @@ class AcousticTrainer(GenericTrainer):
                     break
 
             loss = np.mean(losses)
+            if loss < self.best_valid_loss:
+                print(f"Updating best checkpoint prev_valid_loss: {self.best_valid_loss} valid_loss: {loss}")
+                self.save_to_checkpoint(type="best")
+                self.best_valid_loss = loss
+            else:
+                print(f"Best validation loss is still: {self.best_valid_loss}")
 
             self._write_summary_valid(self.step, loss)
 

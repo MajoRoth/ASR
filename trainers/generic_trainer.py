@@ -53,10 +53,10 @@ class GenericTrainer:
         self.optimizer.load_state_dict(state_dict['optimizer'])
         self.step = state_dict['step']
 
-    def save_to_checkpoint(self, filename='weights'):
-        save_basename = f'{self.name}_{filename}-{self.step}.pt'
+    def save_to_checkpoint(self, type='last'):
+        save_basename = f'{self.name}-{self.step}.pt'
         save_name = f'{self.model_dir}/{save_basename}'
-        link_name = f'{self.model_dir}/{self.name}_{filename}.pt'
+        link_name = f'{self.model_dir}/{self.name}_{type}.pt'
         torch.save(self.state_dict(), save_name)
         if os.name == 'nt':
             torch.save(self.state_dict(), link_name)
@@ -65,9 +65,9 @@ class GenericTrainer:
                 os.unlink(link_name)
             os.symlink(save_basename, link_name)
 
-    def restore_from_checkpoint(self, filename='weights'):
+    def restore_from_checkpoint(self, type='last'):
         try:
-            ckpt_file = f'{self.model_dir}/{self.name}_{filename}.pt'
+            ckpt_file = f'{self.model_dir}/{self.name}_{type}.pt'
             checkpoint = torch.load(ckpt_file)
             self.load_state_dict(checkpoint)
             print(f"INFO: model was restored from checkpoint {ckpt_file}")
