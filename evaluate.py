@@ -48,13 +48,17 @@ def main(args):
   N_BATCHES_TO_EVAL = 2
   for feats in val_ds:
       probs = model.predict(feats['x'])
-      text_from_probs = model.greedy_transcription(probs)
+      pred_text = model.greedy_transcription(probs)
+      GT_text = model.tokens_to_text(feats['label'])
+      
+      for pred_t, GT_t in zip(pred_text, GT_text):  
+          print(f"GT text: {GT_t}  pred text: {pred_t}")
 
-      text_from_wavs = model.wavs_to_greedy_transcription(feats['wav'])
-      print(f'text_from_probs: {text_from_probs}  text_from_wavs: {text_from_wavs}')
+      # text_from_wavs = model.wavs_to_greedy_transcription(feats['wav'])
+      # print(f'text_from_probs: {text_from_probs}  text_from_wavs: {text_from_wavs}')
 
-      probs_from_wav = model.predict_from_wav(feats['wav'])
-      assert probs.shape == probs_from_wav.shape
+      # probs_from_wav = model.predict_from_wav(feats['wav'])
+      # assert probs.shape == probs_from_wav.shape
 
 def get_parser():
   parser = argparse.ArgumentParser(description='train an AudioMPD model')
