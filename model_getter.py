@@ -2,7 +2,7 @@ from models.linear_acoustic_model import LinearAcoustic
 from models.DeepSpeech2 import DS2LargeModel, DS2SmallModel, DS2ToyModel
 from models.mini_lstm_model import MiniLSTM
 
-def get_model(args, cfg):
+def get_model(args=None, cfg=None):
     if cfg.model == "LinearAcoustic":
         return LinearAcoustic(cfg)
     elif cfg.model == 'DeepSpeech2_Large':

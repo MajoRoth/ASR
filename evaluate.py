@@ -7,6 +7,7 @@ import torch
 import argparse
 from asr import ASR
 from ctc import GreedyCTC, LexiconCTC, LanguageModelCTC
+from pathlib import Path
 
 #############################################################################################
 #### Taken from https://github.com/microsoft/NeuralSpeech/tree/master/PriorGrad-vocoder #####
@@ -36,7 +37,12 @@ def restore_from_checkpoint(model, model_dir, step, cfg, ckpt_type='best'):
 
 def load_all_models(args):
     # load all 3 models with best ckpts and resturn them as list
-    return list()
+    models = list()
+    for conf in Path("confs").rglob("*.json"):
+        cfg = AttrDict(json.load(open(str(conf))))
+        models.append(get_model(cfg=cfg))
+
+    return models
 #############################################################################################
 
 def evaluate_single_model(asr: ASR, val_ds):
@@ -110,6 +116,7 @@ def get_parser():
   return parser
 
 if __name__ == "__main__":
-  parser = get_parser()
-  args = parser.parse_args()
-  main(args)
+    load_all_models(1)
+    parser = get_parser()
+    args = parser.parse_args()
+    main(args)
