@@ -88,8 +88,8 @@ class LexiconCTC(torch.nn.Module):
         self.labels = labels
         self.blank = blank
 
-        self.an4_lexicon = AN4Lexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/an4-vocab.txt")
-        self.librispeech_lexicon = LibrispeechLexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/librispeech-vocab.txt")
+        self.an4_lexicon = AN4Lexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/data/an4-vocab.txt")
+        self.librispeech_lexicon = LibrispeechLexicon(lexicon_path="/Users/amitroth/PycharmProjects/ASR/data/librispeech-vocab.txt")
 
     def forward(self, emission: torch.Tensor) -> List[str]:
         """
@@ -140,6 +140,9 @@ class LexiconCTC(torch.nn.Module):
                 result = res
 
         return result.split()
+
+    def __str__(self):
+        return "LexiconCTC"
 
 
 

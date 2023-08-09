@@ -5,6 +5,8 @@ from dataset_preprocessed import build_datasets
 import json
 import torch
 import argparse
+from asr import ASR
+from ctc import GreedyCTC, LexiconCTC, LanguageModelCTC
 
 #############################################################################################
 #### Taken from https://github.com/microsoft/NeuralSpeech/tree/master/PriorGrad-vocoder #####
@@ -31,7 +33,36 @@ def restore_from_checkpoint(model, model_dir, step, cfg, ckpt_type='best'):
         model, step = load_state_dict(model, checkpoint)
         print("Loaded {} from {} step checkpoint".format(f'{model_dir}/{cfg.model}_{ckpt_type}.pt', step))
         return model, step
+
+def load_all_models(args):
+    # load all 3 models with best ckpts and resturn them as list
+    return list()
 #############################################################################################
+
+def evaluate_single_model(asr: ASR, val_ds):
+    """
+    calculate wer
+    """
+    print(f"evaluating: {asr}")
+    for feats in val_ds:
+        output = asr.transcribe(feats['x'])
+        print(output)
+        print(feats['text'])
+
+
+def evaluate_all_configurations(args):
+    cfg = AttrDict(json.load(open(args.conf)))
+    train_ds, val_ds = build_datasets(args, cfg)
+
+    acoustic_models = load_all_models(args)
+    ctc_models = [
+        GreedyCTC, LexiconCTC, LanguageModelCTC
+    ]
+
+    for acoustic_model in acoustic_models:
+        for ctc_model in ctc_models:
+            asr = ASR(acoustic_model, ctc_model)
+            evaluate_single_model(asr, val_ds)
 
 def main(args):
   cfg = AttrDict(
@@ -45,10 +76,18 @@ def main(args):
   model = get_model(args, cfg)
   model, step = restore_from_checkpoint(model, model_dir, step=args.ckpt_step, cfg=cfg, ckpt_type='best')
 
+  ctc = GreedyCTC(model.token_dict)
+  asr = ASR(model, ctc)
+
+
   train_ds, val_ds = build_datasets(args, cfg)
 
   N_BATCHES_TO_EVAL = 2
   for feats in val_ds:
+      output = asr.transcribe(feats['x'])
+      print(" --- batch ---")
+      print(output)
+      print(feats['text'])
       probs = model.predict(feats['x'])
       text_from_probs = model.greedy_transcription(probs)
 

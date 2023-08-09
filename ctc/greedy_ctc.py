@@ -21,9 +21,17 @@ class GreedyCTC(torch.nn.Module):
         Returns:
           List[str]: The resulting transcript
         """
-        indices = torch.argmax(emission, dim=-1)  # [num_seq,]
-        indices = torch.unique_consecutive(indices, dim=-1)
-        indices = [i for i in indices if i != self.blank]
+        output = list()
+        for batch in emission:
+            indices = torch.argmax(batch, dim=-1)  # [num_seq,]
+            indices = torch.unique_consecutive(indices, dim=-1)
+            indices = [i for i in indices if i != self.blank]
 
-        joined = "".join([self.labels[i] for i in indices])
-        return joined.replace("|", " ").strip().split()
+            # joined = "".join([self.labels[i] for i in indices])
+            joined = self.labels.tokens2text(indices)
+            output.append(joined)
+
+        return output
+
+    def __str__(self):
+        return "GreedyCTC"

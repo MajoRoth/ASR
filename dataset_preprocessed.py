@@ -138,7 +138,7 @@ class AN4DatasetPreprocessed(Dataset):
         text_len = len(label)
         if text_len < self.max_text_len:
             label = torch.concat((label, torch.zeros(self.max_text_len - text_len, dtype=int))) 
-        return {"x": melspec, "length": n, "label": label, "label_length": text_len, "wav": wav}
+        return {"x": melspec, "length": n, "label": label, "label_length": text_len, "wav": wav, "text": text}
 
 
     def __str__(self):
