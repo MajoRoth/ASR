@@ -9,6 +9,9 @@ import wandb
 import numpy as np
 import librosa
 
+from demucs_code.augment import *
+from denoiser_code.augment import BandMask
+
 
 class AcousticTrainer(GenericTrainer):
     def __init__(self, args, model, dataset, dataset_val, opt, cfg):
@@ -21,9 +24,20 @@ class AcousticTrainer(GenericTrainer):
         self.summary_writer = None
         self.loss = nn.CTCLoss()
         self.best_valid_loss = 1000000
+        self.augment = None
+        if cfg.augment:
+            augment = [Shift(int(0.1 * cfg.data_sr))]
+            augment += [BandMask(sample_rate=cfg.data_sr, fmin=10)]
+            augment += [FlipSign(), Scale()]
+            self.augment = nn.Sequential(*augment).cuda()
 
-    def forward_and_loss(self, features):
-        logits = self.model(features['x']) # B, T, C
+    def forward_and_loss(self, features, skip_augment=False):
+        if self.augment is not None:
+            augmented_wav = self.augment(features['wav'].unsqueeze(1).unsqueeze(2))[:, 0, 0, :]
+            x = self.model.to_melspec(augmented_wav, cuda=True)
+        else:
+            x = features['x']
+        logits = self.model(x) # B, T, C
         logsoftmax = torch.nn.functional.log_softmax(logits.permute(1, 0, 2), dim=-1)
         loss = self.loss(logsoftmax, features['label'], features['length'], features['label_length'])
         return {"logits": logits, "target": features['label'], "loss": loss}
@@ -53,7 +67,7 @@ class AcousticTrainer(GenericTrainer):
 
                 features = _nested_map(features, lambda x: x.to(device) if isinstance(x, torch.Tensor) else x)
 
-                outputs = self.forward_and_loss(features)
+                outputs = self.forward_and_loss(features, skip_augment=True)
 
                 losses.append(outputs["loss"].cpu().numpy())
 

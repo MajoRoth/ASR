@@ -27,14 +27,17 @@ class CharDictionary():
 class Wav2MelSpec():
     def __init__(self, cfg):
         self.to_melspec = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels)
-    def __call__(self, wav):
-        melspec = self.to_melspec(wav)
+        self.to_melspec_cuda = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels).cuda()
+    def __call__(self, wav, cuda=False):
+        to_mel = self.to_melspec_cuda if cuda else self.to_melspec
+        melspec = to_mel(wav)
         if len(melspec.shape) == 2:
             # [n_mels, seq_len]
             return melspec.T
         else:
             # [batch, n_mels, seq_len]
             return melspec.permute(0, 2, 1)
+            
 
 class AN4DatasetPreprocessed(Dataset):
     """
