@@ -62,3 +62,6 @@ class LanguageModelCTC(torch.nn.Module):
         result = self.decoder(emission)
         transcript = " ".join(result[0][0].words).strip()
         return transcript
+
+    def __str__(self):
+        return "LanguageModelCTC"

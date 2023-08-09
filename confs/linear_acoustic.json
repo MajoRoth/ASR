@@ -4,7 +4,7 @@
  "n_mels": 128,
  "audio_channels": 1,
  "learning_rate": 0.001,
- "batch_size": 16,
+ "batch_size": 4,
  "grad_accum_steps": 1,
  "mixed_percision_training": false,
  "valid_loop_every": 500,

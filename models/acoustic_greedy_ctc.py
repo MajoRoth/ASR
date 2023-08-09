@@ -63,13 +63,10 @@ if __name__ == '__main__':
     bundle.get_model()
     acoustic_model = bundle.get_model()
 
-    path = Path("/Users/amitroth/PycharmProjects/ASR/an4")
-    val = AN4Dataset(path / Path("val"))
 
-    wav, label = val[2]
-    emission, _ = acoustic_model(wav)
 
     lex = LexiconCTC(labels=[label.lower() for label in bundle.get_labels()])
+    print([label.lower() for label in bundle.get_labels()])
     greedy = GreedyCTC(labels=[label.lower() for label in bundle.get_labels()])
     lm = LanguageModelCTC()
 
