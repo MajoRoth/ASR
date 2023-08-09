@@ -116,7 +116,6 @@ def get_parser():
   return parser
 
 if __name__ == "__main__":
-    load_all_models(1)
     parser = get_parser()
     args = parser.parse_args()
     main(args)
