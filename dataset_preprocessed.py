@@ -9,7 +9,7 @@ import torchaudio
 
 TEXT_MIN_ASCII_VAL = 32
 TEXT_MAX_ASCII_VAL = 90
-EPSILON = "ε"
+EPSILON = "|"
 
 
 class CharDictionary():
@@ -17,7 +17,7 @@ class CharDictionary():
         self.chr2label = {chr(ascii_val): (ascii_val - text_min_ascii + 1) for ascii_val in range(text_min_ascii, text_max_asii+1)}
         self.label2chr = {v: k for k,v in self.chr2label.items()}
         self.label2chr[0] = EPSILON
-    
+
     def text2tokens(self, text):
         return torch.tensor([self.chr2label[c] for c in text], dtype=int)
 
@@ -26,10 +26,14 @@ class CharDictionary():
 
 class Wav2MelSpec():
     def __init__(self, cfg):
-        self.to_melspec = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels)
-        self.to_melspec_cuda = torchaudio.transforms.MelSpectrogram(n_mels=cfg.n_mels).cuda()
+        self.n_mels = cfg.n_mels
+
     def __call__(self, wav, cuda=False):
-        to_mel = self.to_melspec_cuda if cuda else self.to_melspec
+        if cuda:
+            to_mel = torchaudio.transforms.MelSpectrogram(n_mels=self.n_mels).cuda()
+        else:
+            to_mel = torchaudio.transforms.MelSpectrogram(n_mels=self.n_mels)
+
         melspec = to_mel(wav)
         if len(melspec.shape) == 2:
             # [n_mels, seq_len]
@@ -181,15 +185,26 @@ def build_datasets(args, cfg):
     return train_ds, val_ds
 
 
+def construct_lexicon():
+    cache_dict = "/Users/amitroth/PycharmProjects/ASR/data/an4-vocab.txt"
+    new_dict = "/Users/amitroth/PycharmProjects/ASR/data/an4-vocab-lexicon.txt"
+    with open(cache_dict, 'r') as cache:
+        with open(new_dict, 'w') as new:
+            for line in cache.readlines():
+                letters = " ".join([c for c in line])
+                new.writelines(f"{line[:-1]} {letters[:-1]} |\n".upper())
+
+
 if __name__ == '__main__':
-
-    path = Path("/Users/amitroth/PycharmProjects/ASR/an4")
-
-    train = AN4Dataset(path / Path("train"))
-    test = AN4Dataset(path / Path("test"))
-    val = AN4Dataset(path / Path("val"))
-
-    print(train[0])
+    construct_lexicon()
+    #
+    # path = Path("/Users/amitroth/PycharmProjects/ASR/an4")
+    #
+    # train = AN4Dataset(path / Path("train"))
+    # test = AN4Dataset(path / Path("test"))
+    # val = AN4Dataset(path / Path("val"))
+    #
+    # print(train[0])
 
 
 

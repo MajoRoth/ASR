@@ -67,6 +67,7 @@ if __name__ == '__main__':
 
     lex = LexiconCTC(labels=[label.lower() for label in bundle.get_labels()])
     print([label.lower() for label in bundle.get_labels()])
+
     greedy = GreedyCTC(labels=[label.lower() for label in bundle.get_labels()])
     lm = LanguageModelCTC()
 

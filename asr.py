@@ -13,7 +13,7 @@ class ASR:
         """
 
         acoustic_output = self.acoustic_model.forward(x)
-        text = self.ctc.forward(acoustic_output)
+        text = self.ctc_model.forward(emission=acoustic_output)
         return text
 
     def __str__(self):

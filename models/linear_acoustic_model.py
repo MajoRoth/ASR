@@ -12,4 +12,6 @@ class LinearAcoustic(BaseAcousticModel):
         x: melspec of shape (B, T, n_mels)
         """
         return self.acoustic_emb(x)
+
+
     

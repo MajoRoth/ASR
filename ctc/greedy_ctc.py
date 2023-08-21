@@ -27,6 +27,7 @@ class GreedyCTC(torch.nn.Module):
             indices = torch.unique_consecutive(indices, dim=-1)
             indices = [i for i in indices if i != self.blank]
 
+
             # joined = "".join([self.labels[i] for i in indices])
             joined = self.labels.tokens2text(indices)
             output.append(joined)
@@ -35,3 +36,6 @@ class GreedyCTC(torch.nn.Module):
 
     def __str__(self):
         return "GreedyCTC"
+
+    def __repr__(self):
+        return self.__str__()
