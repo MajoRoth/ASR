@@ -28,8 +28,6 @@ def evaluate_single_model(asr: ASR, ds):
 
     output_text = list()
     for feats in ds:
-        print(feats['x'])
-        print(feats['x'].shape)
         output = asr.transcribe(feats['x'])
         for i, prediction in enumerate(output):
             # print(f"predicted: {prediction}")
