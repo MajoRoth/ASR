@@ -1,9 +1,9 @@
 from torch import nn
+from models.base_acoustic_model import BaseAcousticModel
 
-
-class DS2LargeModel(nn.Module):
+class DS2LargeModel(BaseAcousticModel):
     def __init__(self, cfg):
-        super().__init__()
+        super().__init__(cfg)
         self.cfg = cfg
 
         self.conv_layers = nn.Sequential(
@@ -59,9 +59,9 @@ class DS2LargeModel(nn.Module):
         return x
 
 
-class DS2SmallModel(nn.Module):
+class DS2SmallModel(BaseAcousticModel):
     def __init__(self, cfg):
-        super().__init__()
+        super().__init__(cfg)
         self.cfg = cfg
 
         self.conv_layers = nn.Sequential(
@@ -117,9 +117,9 @@ class DS2SmallModel(nn.Module):
         return x
 
 
-class DS2ToyModel(nn.Module):
+class DS2ToyModel(BaseAcousticModel):
     def __init__(self, cfg):
-        super().__init__()
+        super().__init__(cfg)
         self.cfg = cfg
 
         self.conv_layers = nn.Sequential(

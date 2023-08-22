@@ -103,8 +103,10 @@ class AcousticTrainer(GenericTrainer):
         if self.logger == "tensorboard":
             writer = self.summary_writer or SummaryWriter(f"{self.model_dir}/tensorboard", purge_step=step)
             writer.add_scalar('val/loss', loss, step)
+            writer.add_scalar('val/best_loss', self.best_valid_loss, step)
             writer.flush()
             self.summary_writer = writer
 
         if self.logger == "wandb":
             wandb.log({"validation/loss": loss}, step=step)
+            wandb.log({"validation/best_loss": self.best_valid_loss}, step=step)
