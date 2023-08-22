@@ -43,4 +43,7 @@ class BaseAcousticModel(nn.Module):
     def wavs_to_greedy_transcription(self, wavs):
         return self.greedy_transcription(self.predict_from_wav(wavs))
 
+    def __str__(self):
+        return self.cfg.run_name
+
 
