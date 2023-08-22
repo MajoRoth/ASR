@@ -46,7 +46,8 @@ def evaluate_single_model(asr: ASR, ds):
 def main(args):
     char_dict = CharDictionary(TEXT_MIN_ASCII_VAL, TEXT_MAX_ASCII_VAL)
     cfg = AttrDict(json.load(open(args.conf)))
-    train_ds, val_ds = build_datasets(args, cfg)
+    print(cfg)
+    train_ds, test_ds, val_ds = build_datasets(args, cfg)
 
     print(f'ARGS: {args}')
     print(f'PARAMS: {cfg}')
@@ -63,6 +64,12 @@ def main(args):
 
             asr = ASR(acoustic_model, ctc_model)
             predictions.append(evaluate_single_model(asr, val_ds))
+
+    print("--- test ---")
+    for acoustic_model in acoustic_models:
+        for ctc_model in ctc_models:
+            asr = ASR(acoustic_model, ctc_model)
+            predictions.append(evaluate_single_model(asr, test_ds))
 
     print("--- train ---")
     for acoustic_model in acoustic_models:

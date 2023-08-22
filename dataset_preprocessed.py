@@ -172,9 +172,15 @@ def build_datasets(args, cfg):
     datasets_path = Path(cfg.data_dir)
     train_ds = build_single_dataset(datasets_path / Path("train"), args, cfg, is_training=True)
     val_ds = build_single_dataset(datasets_path / Path("val"), args, cfg, is_training=False)
+    test_ds = build_single_dataset(datasets_path / Path("test"), args, cfg, is_training=False)
+
     val_ds.dataset.feats_std = train_ds.dataset.feats_std
     val_ds.dataset.feats_mean = train_ds.dataset.feats_mean
     val_ds.dataset.token_dict = train_ds.dataset.token_dict
+
+    test_ds.dataset.feats_std = train_ds.dataset.feats_std
+    test_ds.dataset.feats_mean = train_ds.dataset.feats_mean
+    test_ds.dataset.token_dict = train_ds.dataset.token_dict
 
     # n_tokens_train = train_ds.dataset.text_max_ascii - train_ds.dataset.text_min_ascii 
     # n_tokens_val = val_ds.dataset.text_max_ascii - val_ds.dataset.text_min_ascii 
@@ -182,7 +188,7 @@ def build_datasets(args, cfg):
     # n_tokens = max(n_tokens_train, n_tokens_val) + 1 # adding one for the blank character
     # print(f'n_tokens: {n_tokens}')
 
-    return train_ds, val_ds
+    return train_ds, test_ds, val_ds
 
 
 def construct_lexicon():
