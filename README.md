@@ -8,10 +8,20 @@ Several ASR implementations
 - for conda: run `conda env create -f environment.yml`
 - experiment with the models!
 ## models
-Models are ranked from worst to best.
+All available models are cartesian product of the following acoustic models and ctc decoders configurations.
 
-1. Acoustic Greedy CTC - uses WAV2VEC to get the characters of the recording, and then naively concatenates to produce a sentence. 
-Achieves WER of 0.78 on the val data.
+### Acoustic Models
+
+1. Linear Layer
+2. LSTM
+3. DeepSpeech Toy
+4. DeepSpeech Small
+5. DeepSpeech Large
+
+### CTC Decoders
+1. Greedy CTC
+2. Lexicon CTC
+3. LM CTC
 
 
 ## Training
@@ -19,5 +29,14 @@ Achieves WER of 0.78 on the val data.
 `python train.py --conf confs/linear_acoustic.json --logger wandb`
 
 ## Evaluation
+The following command enables you to evaluate and observer the wer of all available models on train, test and val data
 ### Eval command example:
 `python evaluate.py --conf confs/linear_acoustic.json`
+
+## Try
+A CLI which enables you to construct the ASR model you want and try to transcribe with it :)
+### Eval command example:
+`python try.py --conf confs/archive/try.json`
+
+
+

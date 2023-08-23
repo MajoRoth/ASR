@@ -3,6 +3,10 @@ from confs.confs import AttrDict
 from dataset_preprocessed import build_datasets, CharDictionary, TEXT_MIN_ASCII_VAL, TEXT_MAX_ASCII_VAL
 import json
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
 import argparse
 from asr import ASR
 from ctc import GreedyCTC, LexiconCTC, LanguageModelCTC
@@ -19,6 +23,49 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
+def draw_graphs():
+
+    # matplotlib settings
+    # mpl.rcParams['font.family'] = "Arial"
+    # mpl.rcParams['font.weight'] = "bold"
+    # plt.rcParams['font.size'] = 22
+    # plt.rcParams['axes.linewidth'] = 3
+
+    species = ("Linear", "LSTM", "DeepSpeech\nToy", "DeepSpeech\nSmall", "DeepSpeech\nLarge")
+    data = {
+        'Greedy': (0.99, 0.83, 0.33, 0, 0),
+        'Lexicon': (0.98, 0.72, 0.21, 0, 0),
+        'LM': (0.98, 0.77, 0.21, 0, 0)
+    }
+
+    augmented_data = {
+        'Greedy': (0.99, 0.49, 0.2, 0, 0),
+        'Lexicon': (0.99, 0.35, 0.16, 0, 0),
+        'LM': (0.98, 0.35, 0.16, 0, 0)
+    }
+
+    x = np.arange(len(species))  # the label locations
+    width = 0.25  # the width of the bars
+    multiplier = 0
+
+    fig, ax = plt.subplots(layout='constrained')
+
+    for attribute, measurement in augmented_data.items():
+        offset = width * multiplier
+        rects = ax.bar(x + offset, measurement, width, label=attribute)
+        ax.bar_label(rects, padding=3, fontsize=8)
+        multiplier += 1
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('WER')
+    ax.set_title('WER by model measured augmented data')
+    ax.set_xticks(x + width, species)
+    ax.legend(loc='upper right')
+    # ax.set_ylim(0, 250)
+
+    plt.show()
+
 def evaluate_single_model(asr: ASR, ds):
     """
     calculate wer
@@ -30,13 +77,13 @@ def evaluate_single_model(asr: ASR, ds):
     for feats in ds:
         output = asr.transcribe(feats['x'])
         for i, prediction in enumerate(output):
-            # print(f"predicted: {prediction}")
+            print(f"predicted: {prediction}")
             output_text.append(prediction)
-            # print(f"GT: {feats['text'][i]}")
+            print(f"GT: {feats['text'][i]}")
             word_error = wer(feats['text'][i], prediction)
 
             total_wer.append(word_error)
-            # print(f"wer {word_error}")
+            print(f"wer {word_error}")
 
 
     print(f"Finished evaluating. Total error: {bcolors.OKCYAN}{sum(total_wer) / len(total_wer)}{bcolors.ENDC}")
@@ -134,6 +181,7 @@ def get_parser():
 
 
 if __name__ == "__main__":
-    parser = get_parser()
-    args = parser.parse_args()
-    main(args)
+    draw_graphs()
+    # parser = get_parser()
+    # args = parser.parse_args()
+    # main(args)
