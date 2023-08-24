@@ -54,7 +54,7 @@ def init_logger_if_needed(args, cfg):
 def train(args, cfg):
     init_logger_if_needed(args, cfg)
 
-    dataset_train, dataset_val = build_datasets(args, cfg)
+    dataset_train, _, dataset_val = build_datasets(args, cfg)
 
     model = get_model(args, cfg)
     if torch.cuda.is_available():

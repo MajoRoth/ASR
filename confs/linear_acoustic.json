@@ -12,4 +12,6 @@
  "data_dir": "data/an4/an4",
  "max_steps": 20000,
  "shuffle_train_ds": true,
- "normalize_features": false}
+ "normalize_features": false,
+ "augment": false,
+ "data_sr": 16000}
