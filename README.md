@@ -23,6 +23,8 @@ All available models are cartesian product of the following acoustic models and 
 2. Lexicon CTC
 3. LM CTC
 
+you can evaluate all models using `evaluate.py`, or try a specific configuration with `try.py`
+
 
 ## Training
 ### Train command example:
@@ -37,6 +39,9 @@ The following command enables you to evaluate and observer the wer of all availa
 A CLI which enables you to construct the ASR model you want and try to transcribe with it :)
 ### Eval command example:
 `python try.py --conf confs/archive/try.json`
+
+## Benchmarks
+
 
 
 

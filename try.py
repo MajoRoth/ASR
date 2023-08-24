@@ -76,7 +76,7 @@ def main(args):
 
     wav = get_wav_by_input(args)
 
-    print(f"Transcribing {args.wav_path} with {asr}")
+    print(f"Transcribing {wav} with {asr}")
     output = asr.transcribe(wav)
     print(output)
 
