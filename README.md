@@ -41,7 +41,9 @@ A CLI which enables you to construct the ASR model you want and try to transcrib
 `python try.py --conf confs/archive/try.json`
 
 ## Benchmarks
+Evaluation results on all data are detailed in the paper. we appended here the graphs on the validation data.
 
+[graph](https://github.com/MajoRoth/ASR/blob/main/data/static/augmented_benchmarks.png)
 
 
 
