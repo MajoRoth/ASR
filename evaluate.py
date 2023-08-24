@@ -1,4 +1,4 @@
-from model_getter import *
+from models.model_getter import *
 from confs.confs import AttrDict
 from dataset_preprocessed import build_datasets, CharDictionary, TEXT_MIN_ASCII_VAL, TEXT_MAX_ASCII_VAL
 import json
@@ -32,17 +32,17 @@ def draw_graphs():
     # plt.rcParams['font.size'] = 22
     # plt.rcParams['axes.linewidth'] = 3
 
-    species = ("Linear", "LSTM", "DeepSpeech\nToy", "DeepSpeech\nSmall", "DeepSpeech\nLarge")
+    species = ("Linear", "LSTM", "DeepSpeech\nToy", "DeepSpeech\nSmall")
     data = {
-        'Greedy': (0.99, 0.83, 0.33, 0, 0),
-        'Lexicon': (0.98, 0.72, 0.21, 0, 0),
-        'LM': (0.98, 0.77, 0.21, 0, 0)
+        'Greedy': (0.99, 0.83, 0.33, 0.43),
+        'Lexicon': (0.98, 0.72, 0.21, 0.34),
+        'LM': (0.98, 0.77, 0.21, 0.34)
     }
 
     augmented_data = {
-        'Greedy': (0.99, 0.49, 0.2, 0, 0),
-        'Lexicon': (0.99, 0.35, 0.16, 0, 0),
-        'LM': (0.98, 0.35, 0.16, 0, 0)
+        'Greedy': (0.99, 0.49, 0.2, 0.3),
+        'Lexicon': (0.99, 0.35, 0.16, 0.22),
+        'LM': (0.98, 0.35, 0.16, 0.21)
     }
 
     x = np.arange(len(species))  # the label locations
@@ -51,7 +51,7 @@ def draw_graphs():
 
     fig, ax = plt.subplots(layout='constrained')
 
-    for attribute, measurement in augmented_data.items():
+    for attribute, measurement in data.items():
         offset = width * multiplier
         rects = ax.bar(x + offset, measurement, width, label=attribute)
         ax.bar_label(rects, padding=3, fontsize=8)
@@ -59,12 +59,12 @@ def draw_graphs():
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('WER')
-    ax.set_title('WER by model measured augmented data')
+    ax.set_title('WER by model measured on real data')
     ax.set_xticks(x + width, species)
     ax.legend(loc='upper right')
     # ax.set_ylim(0, 250)
 
-    plt.savefig("data/static/augmented_benchmarks")
+    plt.savefig("data/static/real_benchmarks")
 
 def evaluate_single_model(asr: ASR, ds):
     """
