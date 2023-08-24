@@ -64,7 +64,7 @@ def draw_graphs():
     ax.legend(loc='upper right')
     # ax.set_ylim(0, 250)
 
-    plt.show()
+    plt.savefig("data/static/augmented_benchmarks")
 
 def evaluate_single_model(asr: ASR, ds):
     """

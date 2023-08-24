@@ -115,61 +115,61 @@ class LexiconCTC(torch.nn.Module):
 
 
 
-    # def forward(self, emission: torch.Tensor) -> List[str]:
-    #     """
-    #         Calculating the best k options
-    #         choosing the sentence with best score
-    #
-    #         VERY TIME CONSUMING, NEED TO CHECK DIFFERENT METHODS
-    #     """
-    #     output = list()
-    #     for batch in emission:
-    #         k_routes = [
-    #             [list(), 0.0]  # each route contains the letters he visited and the current score
-    #         ]
-    #         for letter in tqdm(batch):
-    #             letter = (letter - torch.min(letter) + 0.001) / (torch.max(letter) - torch.min(letter))  # normalize
-    #             candidates = list()
-    #
-    #             for route, score in k_routes:
-    #                 for j in range(len(letter)):
-    #                     new_score = score - torch.log(letter[j])
-    #
-    #                     candidates.append(
-    #                         [route + [j], new_score]
-    #                     )
-    #             sorted_candidates = sorted(candidates, key=lambda x: x[1])
-    #             k_routes = sorted_candidates[:LexiconCTC.K]
-    #
-    #
-    #         calculated_routes = set()
-    #         for route, score in k_routes:
-    #             indices = torch.unique_consecutive(torch.tensor(route), dim=-1)
-    #             indices = [i for i in indices if i != self.blank]
-    #             # joined = "".join([self.labels[i] for i in indices])
-    #             # result = joined.replace("|", " ").strip()
-    #             # output.add(result)
-    #
-    #             joined = self.labels.tokens2text(indices)
-    #             calculated_routes.add(joined)
-    #
-    #         max_score = -1
-    #         result = None
-    #         for res in calculated_routes:
-    #             score = 0
-    #             for w in res.split():
-    #                 if self.an4_lexicon.is_word(w):
-    #                     score += 1
-    #                 if self.librispeech_lexicon.is_word(w):
-    #                     score += 0.1
-    #
-    #             if score > max_score:
-    #                 max_score = score
-    #                 result = res
-    #
-    #         output.append(result)
-    #
-    #     return output
+    def slow_forward(self, emission: torch.Tensor) -> List[str]:
+        """
+            Calculating the best k options
+            choosing the sentence with best score
+
+            VERY TIME CONSUMING, NEED TO CHECK DIFFERENT METHODS
+        """
+        output = list()
+        for batch in emission:
+            k_routes = [
+                [list(), 0.0]  # each route contains the letters he visited and the current score
+            ]
+            for letter in tqdm(batch):
+                letter = (letter - torch.min(letter) + 0.001) / (torch.max(letter) - torch.min(letter))  # normalize
+                candidates = list()
+
+                for route, score in k_routes:
+                    for j in range(len(letter)):
+                        new_score = score - torch.log(letter[j])
+
+                        candidates.append(
+                            [route + [j], new_score]
+                        )
+                sorted_candidates = sorted(candidates, key=lambda x: x[1])
+                k_routes = sorted_candidates[:LexiconCTC.K]
+
+
+            calculated_routes = set()
+            for route, score in k_routes:
+                indices = torch.unique_consecutive(torch.tensor(route), dim=-1)
+                indices = [i for i in indices if i != self.blank]
+                # joined = "".join([self.labels[i] for i in indices])
+                # result = joined.replace("|", " ").strip()
+                # output.add(result)
+
+                joined = self.labels.tokens2text(indices)
+                calculated_routes.add(joined)
+
+            max_score = -1
+            result = None
+            for res in calculated_routes:
+                score = 0
+                for w in res.split():
+                    if self.an4_lexicon.is_word(w):
+                        score += 1
+                    if self.librispeech_lexicon.is_word(w):
+                        score += 0.1
+
+                if score > max_score:
+                    max_score = score
+                    result = res
+
+            output.append(result)
+
+        return output
 
     def __str__(self):
         return "LexiconCTC"
