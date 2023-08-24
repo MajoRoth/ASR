@@ -1,6 +1,6 @@
 # ASR
 Several ASR implementations.
-A full description of the project can be found in the [paper](https://github.com/MajoRoth/ASR/blob/main/paper.pdf).
+A full description of the project can be found in the [paper](https://github.com/MajoRoth/ASR/blob/a605c3188ff46c9511db112f388f406b3e7c6b6b/paper.pdf).
 
 
 ## installaion
