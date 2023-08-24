@@ -32,16 +32,17 @@ def load_state_dict(model, state_dict):
     return model, step
 
 def restore_from_checkpoint(model, model_dir, step, cfg, ckpt_type='best'):
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    print(f"device is {device}")
+
     try:
-        checkpoint = torch.load(f'{model_dir}/{cfg.model}-{step}.pt')
+        checkpoint = torch.load(f'{model_dir}/{cfg.model}-{step}.pt', map_location=torch.device(device))
         model, step = load_state_dict(model, checkpoint)
         print("Loaded {}".format(f'{model_dir}/{cfg.model}-{step}.pt'))
         return model, step
     except FileNotFoundError:
         ckpt_filename = f'{model_dir}/{cfg.model}_{ckpt_type}.pt'
         print(f"Trying to load {ckpt_filename}...")
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-        print(f"device is {device}")
         checkpoint = torch.load(ckpt_filename, map_location=torch.device(device))
         model, step = load_state_dict(model, checkpoint)
         print("Loaded {} from {} step checkpoint".format(f'{model_dir}/{cfg.model}_{ckpt_type}.pt', step))
@@ -57,7 +58,7 @@ def load_all_models(args):
         cfg = AttrDict(json.load(open(str(conf))))
         model_dir = f"{ckpts_dir}/{cfg.run_name}"
         model = get_model(cfg=cfg)
-        model, step = restore_from_checkpoint(model, model_dir, step=args.ckpt_step, cfg=cfg, ckpt_type='best')
+        model, step = restore_from_checkpoint(model, model_dir, step=args.ckpt_step, cfg=cfg, ckpt_type='last')
         models.append(model)
 
     return models

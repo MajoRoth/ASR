@@ -1,4 +1,4 @@
-from model_getter import *
+from models.model_getter import *
 from confs.confs import AttrDict
 from dataset_preprocessed import build_datasets, CharDictionary, TEXT_MIN_ASCII_VAL, TEXT_MAX_ASCII_VAL
 import json
