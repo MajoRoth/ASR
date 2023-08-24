@@ -46,5 +46,8 @@ Evaluation results on all data are detailed in the paper. we appended here the g
 
 ![graph](https://github.com/MajoRoth/ASR/blob/main/data/static/augmented_benchmarks.png)
 
+![graph](https://github.com/MajoRoth/ASR/blob/main/data/static/real_benchmarks.png)
+
+
 
 
