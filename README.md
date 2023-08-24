@@ -1,5 +1,6 @@
 # ASR
-Several ASR implementations
+Several ASR implementations.
+A full description of the project can be found in the [paper](paper).
 
 
 ## installaion
